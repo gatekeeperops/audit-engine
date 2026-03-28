@@ -1,0 +1,28 @@
+# Environment & credentials
+.env
+.env.local
+.env.production
+*.env
+
+# Generated outputs (not source code)
+reports/
+prospects.csv
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+test-results/
+tests/trello/
+trello-seed*.ts
+seed.spec.ts

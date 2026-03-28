@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GatekeeperOps — AI-Native QA Automation</title>
+  <meta name="description" content="We build automated QA systems for SaaS teams shipping with AI. Release readiness, production monitoring, and continuous test coverage so nothing breaks.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #06080e;
+      color: #94a3b8;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── TOKENS ── */
+    :root {
+      --gold: #c9a84c;
+      --gold-dim: #8a6e2f;
+      --gold-glow: rgba(201,168,76,0.08);
+      --gold-border: rgba(201,168,76,0.18);
+      --surface: #0b0e18;
+      --surface-2: #0e1220;
+      --border: rgba(255,255,255,0.06);
+      --text-high: #f1f5f9;
+      --text-mid: #64748b;
+      --text-low: #1e293b;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 48px;
+      background: rgba(6,8,14,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1180px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      height: 68px;
+    }
+    .logo { font-size: 15px; font-weight: 800; color: var(--text-high); text-decoration: none; letter-spacing: -0.3px; }
+    .logo em { font-style: normal; color: var(--gold); }
+    .nav-right { display: flex; align-items: center; gap: 40px; }
+    .nav-link { font-size: 13px; color: var(--text-mid); text-decoration: none; font-weight: 500; transition: color .2s; }
+    .nav-link:hover { color: var(--text-high); }
+    .nav-btn {
+      background: var(--gold); color: #06080e;
+      padding: 9px 22px; border-radius: 7px;
+      text-decoration: none; font-size: 13px; font-weight: 800;
+      letter-spacing: 0.2px;
+      transition: opacity .2s, transform .15s;
+    }
+    .nav-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero-wrap {
+      min-height: auto;
+      display: flex; align-items: center;
+      padding: 90px 48px 60px;
+      min-height: auto;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg-glow {
+      position: absolute; top: 30%; left: 45%;
+      transform: translate(-50%, -50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.05) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1180px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: flex-start; position: relative;
+    }
+    @media (max-width: 920px) { .hero-inner { grid-template-columns: 1fr; } .hero-wrap { padding-top: 110px; } }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--gold-glow);
+      border: 1px solid var(--gold-border);
+      color: var(--gold); font-size: 10px; font-weight: 800;
+      padding: 5px 14px; border-radius: 20px;
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-tag span { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+    .hero h1 {
+      font-size: clamp(40px, 5vw, 62px); font-weight: 800;
+      color: var(--text-high); line-height: 1.06;
+      letter-spacing: -0.035em; margin-bottom: 22px;
+    }
+    .hero h1 em { font-style: normal; color: var(--gold); }
+    .hero-sub {
+      font-size: 17px; color: var(--text-mid); line-height: 1.8;
+      margin-bottom: 40px; max-width: 480px;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .btn-gold {
+      background: var(--gold); color: #06080e;
+      padding: 14px 30px; border-radius: 8px;
+      text-decoration: none; font-weight: 800; font-size: 14px;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-gold:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent; color: #475569;
+      padding: 14px 28px; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 14px;
+      border: 1px solid var(--border);
+      transition: border-color .2s, color .2s;
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.2); color: var(--text-high); }
+
+    /* Terminal card */
+    .terminal {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    }
+    .term-bar {
+      background: #0c1018; padding: 13px 18px;
+      display: flex; align-items: center; gap: 7px;
+      border-bottom: 1px solid var(--border);
+    }
+    .td { width: 11px; height: 11px; border-radius: 50%; }
+    .term-label { font-size: 11px; color: #1e293b; margin-left: 10px; font-family: monospace; }
+    .term-body { padding: 24px 26px; font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace; font-size: 12.5px; line-height: 1.9; }
+    .tg { color: #1e293b; }
+    .ta { color: var(--gold); }
+    .tw { color: #cbd5e1; }
+    .tge { color: #34d399; }
+    .tre { color: #f87171; }
+    .tor { color: #fb923c; }
+    .tpu { color: #a78bfa; }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 32px 48px;
+    }
+    .stats-inner {
+      max-width: 1180px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+    }
+    @media (max-width: 768px) { .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 24px; } }
+    .stat {
+      text-align: center; padding: 0 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-n { font-size: 28px; font-weight: 800; color: var(--gold); letter-spacing: -1px; }
+    .stat-l { font-size: 12px; color: var(--text-low); margin-top: 4px; line-height: 1.5; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 100px 48px; }
+    .section-inner { max-width: 1180px; margin: 0 auto; }
+    .dark { background: var(--surface); }
+    .stag { font-size: 10px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 14px; }
+    .sh { font-size: clamp(28px, 2.8vw, 40px); font-weight: 800; color: var(--text-high); letter-spacing: -0.02em; margin-bottom: 16px; line-height: 1.1; }
+    .ss { font-size: 16px; color: var(--text-mid); max-width: 520px; line-height: 1.8; }
+    hr.r { border: none; border-top: 1px solid var(--border); }
+
+    /* ── WHY SECTION ── */
+    .why-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; margin-top: 60px; align-items: start;
+    }
+    @media (max-width: 860px) { .why-grid { grid-template-columns: 1fr; gap: 48px; } }
+    .why-copy p { font-size: 15px; color: #475569; line-height: 1.85; margin-bottom: 20px; }
+    .why-copy p b { color: #64748b; font-weight: 600; }
+    .pillars { display: flex; flex-direction: column; gap: 2px; }
+    .pillar {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px 24px;
+      display: flex; gap: 16px; align-items: flex-start;
+      transition: border-color .2s;
+      margin-bottom: 10px;
+    }
+    .pillar:hover { border-color: var(--gold-border); }
+    .pillar-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+    .pi-gold { background: var(--gold-glow); }
+    .pi-slate { background: rgba(100,116,139,0.1); }
+    .pillar h4 { font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
+    .pillar p { font-size: 13px; color: #475569; line-height: 1.65; }
+
+    /* ── HOW WE WORK ── */
+    .steps {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border);
+      border-radius: 16px; overflow: hidden; margin-top: 60px;
+    }
+    @media (max-width: 768px) { .steps { grid-template-columns: 1fr; } }
+    .step { background: var(--surface); padding: 44px 36px; }
+    .step-n { font-size: 10px; font-weight: 800; color: var(--text-low); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+    .step-ico { font-size: 30px; margin-bottom: 20px; }
+    .step h3 { font-size: 18px; font-weight: 700; color: var(--text-high); margin-bottom: 12px; }
+    .step p { font-size: 14px; color: #475569; line-height: 1.8; }
+    .step p b { color: #64748b; font-weight: 600; }
+
+    /* ── WHAT WE BUILD ── */
+    .build-grid {
+      display: grid; grid-template-columns: 1.3fr 0.7fr;
+      gap: 64px; margin-top: 60px; align-items: start;
+    }
+    @media (max-width: 860px) { .build-grid { grid-template-columns: 1fr; } }
+    .build-cats { display: flex; flex-direction: column; gap: 36px; }
+    .build-cat-label {
+      font-size: 10px; font-weight: 800; color: var(--text-low);
+      text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 14px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .bi {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 14px; color: #475569; line-height: 1.6;
+    }
+    .bi:last-child { border-bottom: none; }
+    .bid { color: var(--gold); font-weight: 700; flex-shrink: 0; font-size: 12px; margin-top: 3px; }
+
+    /* Engagement card */
+    .eng-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      position: sticky; top: 88px;
+    }
+    .eng-top {
+      padding: 28px 28px 24px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 100%);
+    }
+    .eng-label { font-size: 10px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+    .eng-top h3 { font-size: 17px; font-weight: 700; color: var(--text-high); margin-bottom: 8px; }
+    .eng-top p { font-size: 13px; color: #475569; line-height: 1.7; }
+    .eng-rows { padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; }
+    .eng-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; font-size: 13px; }
+    .erl { color: #334155; }
+    .erv { color: #64748b; font-weight: 600; text-align: right; }
+    .eng-cta {
+      display: block; margin: 0 28px 28px;
+      background: var(--gold); color: #06080e;
+      padding: 13px; border-radius: 8px;
+      text-align: center; text-decoration: none;
+      font-weight: 800; font-size: 14px;
+      transition: opacity .2s;
+    }
+    .eng-cta:hover { opacity: 0.9; }
+    .eng-foot { margin: 0 28px 24px; font-size: 12px; color: #1e293b; text-align: center; line-height: 1.65; }
+
+    /* ── PROCESS ── */
+    .process-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border);
+      border-radius: 16px; overflow: hidden; margin-top: 60px;
+    }
+    @media (max-width: 860px) { .process-grid { grid-template-columns: repeat(2, 1fr); } }
+    .ps { background: var(--surface); padding: 36px 28px; }
+    .ps-n { font-size: 10px; font-weight: 800; color: var(--text-low); letter-spacing: 2px; margin-bottom: 18px; text-transform: uppercase; }
+    .ps h3 { font-size: 15px; font-weight: 700; color: var(--text-high); margin-bottom: 10px; }
+    .ps p { font-size: 13px; color: #475569; line-height: 1.75; }
+
+    /* ── CTA ── */
+    .cta-wrap {
+      padding: 110px 48px; text-align: center;
+      position: relative; overflow: hidden;
+      background: var(--surface);
+    }
+    .cta-glow {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-inner { position: relative; max-width: 580px; margin: 0 auto; }
+    .cta-wrap h2 { font-size: clamp(28px, 3vw, 44px); font-weight: 800; color: var(--text-high); letter-spacing: -0.025em; margin-bottom: 16px; line-height: 1.1; }
+    .cta-wrap p { font-size: 16px; color: var(--text-mid); margin-bottom: 40px; line-height: 1.8; }
+    .cta-note { font-size: 13px; color: var(--text-low); margin-top: 18px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #030508;
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+    }
+    .foot-inner {
+      max-width: 1180px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 20px;
+    }
+    .foot-logo { font-size: 15px; font-weight: 800; color: var(--text-high); }
+    .foot-logo em { font-style: normal; color: var(--gold); }
+    .foot-sub { font-size: 12px; color: #1e293b; margin-top: 4px; }
+    .foot-links { display: flex; gap: 28px; }
+    .foot-links a { font-size: 13px; color: #1e293b; text-decoration: none; transition: color .2s; }
+    .foot-links a:hover { color: #475569; }
+
+    /* ── MOBILE ── */
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-right { gap: 16px; }
+  .nav-link { display: none; }
+
+  .hero-wrap { padding: 90px 20px 48px; }
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .hero h1 { font-size: 36px; }
+  .hero-sub { font-size: 15px; max-width: 100%; }
+  .hero-actions { flex-direction: column; gap: 10px; }
+  .btn-gold { text-align: center; }
+  .btn-ghost { text-align: center; }
+  .terminal { width: 100%; }
+  .term-body { padding: 16px 18px; font-size: 11px; }
+
+  .stats-bar { padding: 24px 20px; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .stat { border-right: none; padding: 0; }
+  .stat-n { font-size: 22px; }
+
+  .section { padding: 60px 20px; }
+
+  .why-grid { grid-template-columns: 1fr; gap: 36px; }
+
+  .steps { grid-template-columns: 1fr; }
+  .step { padding: 32px 24px; }
+
+  .build-grid { grid-template-columns: 1fr; gap: 40px; }
+  .eng-card { position: static; }
+
+  .process-grid { grid-template-columns: 1fr 1fr; }
+
+  .cta-wrap { padding: 64px 20px; }
+  .cta-wrap h2 { font-size: 28px; }
+
+  footer { padding: 32px 20px; }
+  .foot-inner { flex-direction: column; gap: 16px; }
+  .foot-links { flex-wrap: wrap; gap: 16px; }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 32px; }
+  .stats-inner { grid-template-columns: 1fr 1fr; }
+  .process-grid { grid-template-columns: 1fr; }
+  .nav-btn { padding: 8px 14px; font-size: 12px; }
+}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo">Gatekeeper<em>Ops</em>.ai</a>
+    <div class="nav-right">
+      <a href="#how-it-works" class="nav-link">How it works</a>
+      <a href="#services" class="nav-link">Services</a>
+      <a href="#contact" class="nav-btn">Book a Call</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div class="hero-bg-glow"></div>
+  <div class="hero-inner">
+    <div>
+      <div style="padding-top:20px"></div>
+      <div class="hero-tag"><span></span>AI-Native QA Automation</div>
+      <h1>Your team ships faster.<br><em>Nothing breaks.</em></h1>
+      <p class="hero-sub">We build the automated QA system your product needs. Release readiness, production monitoring, and continuous test coverage that grows with every feature you ship.</p>
+      <div class="hero-actions">
+        <a href="https://calendly.com/pardha-gatekeeperops/30min" class="btn-gold" target="_blank">Book a Free Call</a>
+        <a href="#how-it-works" class="btn-ghost">See How It Works</a>
+      </div>
+    </div>
+    <div class="terminal">
+      <div class="term-bar">
+        <div class="td" style="background:#ff5f57"></div>
+        <div class="td" style="background:#ffbd2e"></div>
+        <div class="td" style="background:#28c840"></div>
+        <span class="term-label">gatekeeperops — ai audit pipeline</span>
+      </div>
+      <div class="term-body">
+        <div><span class="tg">$</span> <span class="ta">gko audit</span> <span class="tw">https://yourproduct.com</span></div>
+        <div class="tg">&nbsp;</div>
+        <div><span class="tge">✓</span> <span class="tw">AI scanning your live product</span></div>
+        <div><span class="tge">✓</span> <span class="tw">Tech stack detected</span> <span class="tg">Next.js · Stripe · PostHog</span></div>
+        <div><span class="tge">✓</span> <span class="tw">Funnel pages audited</span> <span class="tg">5 pages</span></div>
+        <div><span class="tge">✓</span> <span class="tw">Competitor benchmarked</span></div>
+        <div class="tg">&nbsp;</div>
+        <div><span class="tor">⚠</span> <span class="tw">Performance</span> <span class="tre">3 pages below threshold</span></div>
+        <div><span class="tor">⚠</span> <span class="tw">JavaScript errors</span> <span class="tre">4 found in auth flow</span></div>
+        <div><span class="tor">⚠</span> <span class="tw">Accessibility</span> <span class="tre">11 violations</span></div>
+        <div><span class="tor">⚠</span> <span class="tw">Error monitoring</span> <span class="tre">not detected</span></div>
+        <div class="tg">&nbsp;</div>
+        <div><span class="tpu">→</span> <span class="tw">QA system designed for your stack</span></div>
+        <div><span class="tg">&nbsp;&nbsp;</span><span class="tge">Playwright</span> <span class="tg">·</span> <span class="tge">GitHub Actions</span> <span class="tg">·</span> <span class="tge">Lighthouse CI</span></div>
+        <div class="tg">&nbsp;</div>
+        <div><span class="ta">✦</span> <span class="tw">PDF report ready</span> <span class="tge">delivering now</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-n">9 yrs</div>
+      <div class="stat-l">Playwright and automation expertise</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">AI-first</div>
+      <div class="stat-l">Powered audits and test generation</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">2–4 wks</div>
+      <div class="stat-l">From audit to full QA system live</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">24 hrs</div>
+      <div class="stat-l">Audit report delivered</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">Zero</div>
+      <div class="stat-l">Charge until you approve the plan</div>
+    </div>
+  </div>
+</div>
+
+<hr class="r">
+
+<!-- WHY -->
+<section class="section">
+  <div class="section-inner">
+    <div class="why-grid">
+      <div class="why-copy">
+        <div class="stag">Why GatekeeperOps</div>
+        <h2 class="sh">Built for teams shipping faster with AI.</h2>
+        <p>Engineering teams are shipping faster than ever. AI writes code in minutes. But most teams are still testing the way they did five years ago manually, reactively, and always a step behind.</p>
+        <p>We build AI-powered QA systems using Playwright that keep pace with how your team actually ships. <b>Automated from day one. Integrated into your pipeline. Running on every deploy.</b> Release readiness, production monitoring, and test coverage that grows with your product.</p>
+      </div>
+      <div>
+        <div class="pillars">
+          <div class="pillar">
+            <div class="pillar-icon pi-gold">🎭</div>
+            <div>
+              <h4>Playwright at the Core</h4>
+              <p>The modern standard for browser automation. We write production-grade tests that are reliable, maintainable, and built to last not brittle scripts that break every sprint.</p>
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-icon pi-gold">🤖</div>
+            <div>
+              <h4>AI-Powered Test Generation</h4>
+              <p>We use AI to analyse your product, detect critical flows, and generate test coverage at a speed no manual approach matches. New features get test coverage from day one.</p>
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-icon pi-slate">⚡</div>
+            <div>
+              <h4>Release Readiness on Every PR</h4>
+              <p>Tests run automatically in your CI pipeline on every pull request. Your team gets a pass or fail before anything merges. Nothing ships broken.</p>
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-icon pi-slate">📡</div>
+            <div>
+              <h4>Daily Production Monitoring</h4>
+              <p>Automated runs against your live product every day. Slack alerts the moment something fails before your users find it and before it becomes a support ticket.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="r">
+
+<!-- HOW IT WORKS -->
+<section class="section dark" id="how-it-works">
+  <div class="section-inner">
+    <div class="stag">How it works</div>
+    <h2 class="sh">Three steps. Fully designed before we build.</h2>
+    <p class="ss">No guesswork. No surprise scope. We audit first, design the full system, then build it and you approve before we start.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">01 — Audit</div>
+        <div class="step-ico">🔍</div>
+        <h3>Free AI Audit</h3>
+        <p>Our AI pipeline scans your live product and measures performance, accessibility, errors, and security signals across your entire conversion funnel. We detect your tech stack, benchmark against your top competitors, and deliver a PDF report with specific findings. <b>No access required. No forms. Done within 24 hours.</b></p>
+      </div>
+      <div class="step">
+        <div class="step-n">02 — Design</div>
+        <div class="step-ico">📐</div>
+        <h3>System Design and Approval</h3>
+        <p>We ask the right questions about your stack, release cadence, and what breaking in production actually costs you. Once you share staging access and credentials, <b>we design the complete QA system architecture and present every test, every integration, and every alert before we write a single line of code.</b> You approve the plan. Only then do we build.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">03 — Build</div>
+        <div class="step-ico">🛡️</div>
+        <h3>We Build and Maintain It</h3>
+        <p>Our engineers deliver the full QA system in 2 to 4 weeks working in your environment, integrated with your pipeline, Slack alerts configured. We maintain it as your product grows. Every new feature ships with test coverage already in place.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="r">
+
+<!-- WHAT WE BUILD -->
+<section class="section" id="services">
+  <div class="section-inner">
+    <div class="stag">What we build</div>
+    <h2 class="sh">A QA system that grows with your product.</h2>
+    <p class="ss">Every engagement is scoped to your product, your stack, and your release cadence. These are the pillars we build from.</p>
+    <div class="build-grid">
+        <div class="build-cats">
+            <div>
+              <div class="build-cat-label">What your team gets</div>
+              <div class="bi"><span class="bid">→</span>Complete automated test coverage for every flow that matters to your users built for your stack, not a template</div>
+              <div class="bi"><span class="bid">→</span>A regression suite that runs on every pull request and blocks deploys when something breaks</div>
+              <div class="bi"><span class="bid">→</span>AI-assisted coverage for new features so your test suite never falls behind your release pace</div>
+              <div class="bi"><span class="bid">→</span>Performance and accessibility checks enforced automatically on every build</div>
+              <div class="bi"><span class="bid">→</span>Full CI/CD pipeline integration with the tooling your team already uses</div>
+              <div class="bi"><span class="bid">→</span>Daily production monitoring with Slack alerts before your users find the issue</div>
+              <div class="bi"><span class="bid">→</span>Weekly QA report and ongoing maintenance as your product grows</div>
+            </div>
+          </div>
+      <div class="eng-card">
+        <div class="eng-top">
+          <div class="eng-label">Engagement</div>
+          <h3>Scoped to your product</h3>
+          <p>Every engagement starts with a free audit and a 30-minute call. We scope the build based on your product complexity and release cadence not fixed packages.</p>
+        </div>
+        <div class="eng-rows">
+          <div class="eng-row">
+            <span class="erl">QA system build</span>
+            <span class="erv">Scoped on call</span>
+          </div>
+          <div class="eng-row">
+            <span class="erl">Delivery time</span>
+            <span class="erv">2 to 4 weeks</span>
+          </div>
+          <div class="eng-row">
+            <span class="erl">Monthly monitoring</span>
+            <span class="erv">Available after build</span>
+          </div>
+          <div class="eng-row">
+            <span class="erl">New feature coverage</span>
+            <span class="erv">Every release</span>
+          </div>
+          <div class="eng-row">
+            <span class="erl">First step</span>
+            <span class="erv">Free audit and call</span>
+          </div>
+        </div>
+        <a href="https://calendly.com/pardha-gatekeeperops/30min" class="eng-cta" target="_blank">Book a Free Call</a>
+        <p style="margin:0 28px 24px;font-size:13px;font-weight:700;color:#c9a84c;text-align:center;line-height:1.65">No charge until you approve the plan.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="r">
+
+<!-- PROCESS -->
+<section class="section dark">
+  <div class="section-inner">
+    <div class="stag">Our process</div>
+    <h2 class="sh">Structured. Transparent. Built to last.</h2>
+    <p class="ss">Every engagement follows the same four stages. You always know where we are, what we are building, and what comes next.</p>
+    <div class="process-grid">
+      <div class="ps">
+        <div class="ps-n">01 — Audit</div>
+        <h3>Free product scan</h3>
+        <p>AI-powered audit of your live product. Performance, accessibility, errors, tech stack detection, and competitor benchmark. PDF delivered within 24 hours.</p>
+      </div>
+      <div class="ps">
+        <div class="ps-n">02 — Design</div>
+        <h3>Full system architecture</h3>
+        <p>After the discovery call and staging access, we design and present the complete QA system covering every test, integration, and alert documented before a single line is written.</p>
+      </div>
+      <div class="ps">
+        <div class="ps-n">03 — Build</div>
+        <h3>End-to-end delivery</h3>
+        <p>We build, integrate, and verify everything works inside your environment. Tests in CI, alerts in Slack, reports in your inbox. Delivered in 2 to 4 weeks.</p>
+      </div>
+      <div class="ps">
+        <div class="ps-n">04 — Monitor</div>
+        <h3>Continuous protection</h3>
+        <p>Daily automated runs, Slack alerts on failures, weekly QA reports, and new test coverage added every time your team ships a significant feature.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-wrap" id="contact">
+  <div class="cta-glow"></div>
+  <div class="cta-inner">
+    <div class="stag" style="text-align:center">Get started</div>
+    <h2>Start with a free audit.</h2>
+    <p>We run the audit before the call. You walk in with real findings about your product, not a sales deck. Then we design the full system together.</p>
+    <a href="https://calendly.com/pardha-gatekeeperops/30min" class="btn-gold" target="_blank" style="font-size:15px;padding:16px 36px">Book a Free 30-min Call</a>
+    <p class="cta-note">No commitment. No fixed packages. No charge until you approve the plan.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div>
+      <div class="foot-logo">Gatekeeper<em>Ops</em>.ai</div>
+      <div class="foot-sub">AI-Native QA Automation for SaaS teams</div>
+    </div>
+    <div class="foot-links">
+      <a href="mailto:pardha@gatekeeperops.ai">Pardha · pardha@gatekeeperops.ai</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#services">Services</a>
+      <a href="#contact">Book a call</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
